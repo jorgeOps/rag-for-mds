@@ -6,6 +6,9 @@ setup:
 ex1:
 	PYTHONPATH=src uv run python scripts/ej1.py
 
+ex2_1:
+	PYTHONPATH=src uv run python scripts/ej2_1.py
+
 test:
 	uv run pytest -q
 
