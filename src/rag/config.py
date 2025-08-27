@@ -18,10 +18,12 @@ def load() -> AppConfig:
     base_url = os.getenv("LLM_BASE_URL", "https://llmproxy.ai.orange").strip()
     timeout_s = float(os.getenv("OPENAI_TIMEOUT_S", 30))
     max_retries = int(os.getenv("OPENAI_MAX_RETRIES", 2))
+    embedding_model = os.getenv("EMBEDDING_MODEL", "openai/text-embedding-3-small").strip()
 
     return AppConfig(
         openai_api_key=api_key,
         model=model,
+        embedding_model=embedding_model,
         base_url=base_url,
         timeout_s=timeout_s,
         max_retries=max_retries
