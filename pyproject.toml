@@ -1,0 +1,10 @@
+[project]
+name = "rag-for-mds"
+version = "0.1.0"
+description = "Proyecto para construir un rag de 0 para la prueba técnica"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "openai>=1.102.0",
+    "python-dotenv>=1.1.1",
+]
