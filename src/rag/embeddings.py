@@ -12,8 +12,8 @@ class Embedder:
     Se le puede sobreescribir el modelo.
     """
 
-    def __init__(self, cfg: AppConfig, model: Optional[str] = None) -> None:
-        self._client = OpenAI(
+    def __init__(self, cfg: AppConfig, model: Optional[str] = None, client: Optional[OpenAI] = None) -> None:
+        self._client = client or OpenAI(
             api_key=cfg.openai_api_key,
             base_url=cfg.base_url,
             timeout=cfg.timeout_s,
