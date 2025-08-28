@@ -1,16 +1,14 @@
-from __future__ import annotations
-
 import re
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional, TYPE_CHECKING
 import textwrap
-
 from openai import OpenAI
+from pathlib import Path
+from tqdm import tqdm
+
 from rag.embeddings import Embedder
 from rag.config import load as load_config
-
-if TYPE_CHECKING:
-    from datamodel.app_config import AppConfig
+from datamodel.app_config import AppConfig
 
 
 class VectorDatabaseInterface(ABC):
@@ -34,6 +32,11 @@ class VectorDatabaseInterface(ABC):
     def print_number_of_embeddings(self) -> None:
         """Print the number of stored embeddings."""
         raise NotImplementedError
+    
+    @abstractmethod
+    def load_document_from_path(self, markdown_path: Path) -> None:
+        """Load and process a document into embeddings."""
+        raise NotImplementedError        
 
 
 class VectorDDBB(VectorDatabaseInterface):
@@ -71,8 +74,9 @@ class VectorDDBB(VectorDatabaseInterface):
         También incluye la “introducción” anterior al primer H2 si existe.
         """
         sections = self._sections_from_markdown(markdown_text)
+        print("Generadas", len(sections), "secciones a partir del texto.")
 
-        for i, sec in enumerate(sections):
+        for i, sec in enumerate(tqdm(sections, desc="Generando chunks")):
             title = sec["title"]
             content = sec["content"]
             # Crear embedding de texto + título de la sección -> Me funcionó mejor
@@ -99,6 +103,29 @@ class VectorDDBB(VectorDatabaseInterface):
             )
 
         return self.embeddings, self.chunks, self.meta
+
+
+    def load_document_from_path(self, markdown_path: Path) -> None:
+        """
+        Carga un documento desde una ruta de archivo y lo procesa.
+        """
+        path = Path(markdown_path)
+        if not path.is_absolute():
+            path = (Path.cwd() / path).resolve()
+        
+        if not path.exists():
+            raise FileNotFoundError(f"El archivo {path} no existe.")
+        
+        try:
+            text = path.read_text(encoding="utf-8")
+            print(f"Texto cargado y leído de {path}. Preparando embeddings...")
+        except Exception as e:
+            print(f"Error al leer el archivo {path}: {e}")
+            return
+
+        # Aqui ya se ha leido el documento, o sea que se lo pasasmos 
+        # la funcion que hemos creado arriba para hacer los chunks
+        self.load_document(text)
 
 
     def print_number_of_embeddings(self) -> None:
