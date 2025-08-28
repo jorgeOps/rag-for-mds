@@ -163,3 +163,28 @@ class VectorDDBB(VectorDatabaseInterface):
     def _strip_first_h1_line(text: str) -> str:
         # Elimina la primera línea si es un H1; útil para que la intro no duplique el título
         return re.sub(r"(?m)^\s*#\s+.*\n?", "", text, count=1).strip()
+
+
+    def _nearest_chunks(self, embedding: List[float], top_n: int = 3) -> list[str]:
+        """
+        Devuelve los 'top_n' chunks más cercanos al 'embedding' de entrada,
+        usando el dot product como score de similitud.
+        """
+        if not self.embeddings:
+            return []
+
+        similarities = []
+        for i, stored_embedding in enumerate(self.embeddings):
+            dot_product = sum(a * b for a, b in zip(embedding, stored_embedding))
+            similarities.append((dot_product, i))
+
+        # Reordenarlo según el resultado de dot_product que está en x[0]
+        similarities.sort(reverse=True, key=lambda x: x[0])
+        return [self.chunks[i] for _, i in similarities[:top_n]]
+
+    def nearest_chunks(self, text: str, top_n: int = 3) -> list[str]:
+        """
+        Interfaz pública: recibe TEXTO, calcula su embedding y llama a _nearest_chunks.
+        """
+        query_vec = self._embedder.embed_text(text)
+        return self._nearest_chunks(query_vec, top_n=top_n)
