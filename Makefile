@@ -15,6 +15,9 @@ ex2_2:
 ex3_1:
 	PYTHONPATH=src uv run python scripts/ej3_1.py "$(PROMPT)"
 
+ex3_2:
+	PYTHONPATH=src uv run python scripts/ej3_2.py
+
 test:
 	uv run pytest -q
 
