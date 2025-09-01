@@ -21,8 +21,27 @@ ex3_2:
 ex3_3:
 	PYTHONPATH=src uv run python scripts/ej3_3.py "$(PROMPT)"
 
-test:
-	uv run pytest -q
+ui:
+	PYTHONPATH=src uv run streamlit run main.py --server.port 8501
 
-fmt:
-	uv run ruff check --fix .
+docker-build:
+	docker build -t rag-chatbot .
+
+podman-build:
+	podman build -t rag-chatbot .
+
+docker-run:
+	podman run --rm -it -p 8501:8501 --env-file .env rag-chatbot
+
+podman-run:
+	podman run --rm -it -p 8501:8501 --env-file .env rag-chatbot
+
+docker-run-md:
+	docker run --rm -it -p 8501:8501 --env-file .env \
+		-v $(PWD)/ai-engineer-evaluation-test.md:/app/ai-engineer-evaluation-test.md:ro \
+		rag-chatbot
+
+podman-run-md:
+	podman run --rm -it -p 8501:8501 --env-file .env \
+		-v $(PWD)/ai-engineer-evaluation-test.md:/app/ai-engineer-evaluation-test.md:ro \
+		rag-chatbot

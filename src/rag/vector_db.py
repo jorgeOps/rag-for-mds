@@ -5,10 +5,14 @@ import textwrap
 from openai import OpenAI
 from pathlib import Path
 from tqdm import tqdm
+import logging
 
 from rag.embeddings import Embedder
 from rag.config import load as load_config
 from datamodel.app_config import AppConfig
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class VectorDatabaseInterface(ABC):
@@ -74,7 +78,7 @@ class VectorDDBB(VectorDatabaseInterface):
         También incluye la “introducción” anterior al primer H2 si existe.
         """
         sections = self._sections_from_markdown(markdown_text)
-        print("Generadas", len(sections), "secciones a partir del texto.")
+        logger.info("Generadas %d secciones a partir del texto.", len(sections))
 
         for i, sec in enumerate(tqdm(sections, desc="Generando chunks")):
             title = sec["title"]
@@ -91,6 +95,7 @@ class VectorDDBB(VectorDatabaseInterface):
             self.embeddings.append(vec)
             # Guardamos como chunk el texto "humano" (título + contenido) -> Separado por \n\n
             self.chunks.append(text_for_embedding)
+            # Esta parte al final no hace falta -> no voy a persistir datos
             self.meta.append(
                 {
                     "index": self.index_name,
@@ -118,9 +123,9 @@ class VectorDDBB(VectorDatabaseInterface):
         
         try:
             text = path.read_text(encoding="utf-8")
-            print(f"Texto cargado y leído de {path}. Preparando embeddings...")
+            logger.info(f"Texto cargado y leído de {path}. Preparando embeddings...")
         except Exception as e:
-            print(f"Error al leer el archivo {path}: {e}")
+            logger.info(f"Error al leer el archivo {path}: {e}")
             return
 
         # Aqui ya se ha leido el documento, o sea que se lo pasasmos 
@@ -129,7 +134,7 @@ class VectorDDBB(VectorDatabaseInterface):
 
 
     def print_number_of_embeddings(self) -> None:
-        print(len(self.embeddings))
+        logger.info(len(self.embeddings))
 
 
     def _sections_from_markdown(self, text: str) -> List[Dict[str, Any]]:
